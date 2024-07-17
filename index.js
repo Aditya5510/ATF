@@ -21,7 +21,11 @@ app.use(
 connectDB();
 
 //AI test
-run();
+// run();
+
+//Routes
+
+app.use("/user", require("./Routes/userRoutes"));
 
 //server setup
 app.listen(process.env.PORT, (req, res) => {
