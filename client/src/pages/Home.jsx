@@ -14,15 +14,17 @@ import Dashboard from "../component/Dashboard";
 const Home = () => {
   return (
     <>
-      <SignedIn>
-        <div className="mt-10">
-          {" "}
-          <Dashboard />
-        </div>
-      </SignedIn>
-      <SignedOut>
-        <Hero />
-      </SignedOut>
+      <div className="bg-gradient-to-b from-blue-50 to-white">
+        <SignedIn>
+          <div className="mt-10">
+            {" "}
+            <Dashboard />
+          </div>
+        </SignedIn>
+        <SignedOut>
+          <Hero />
+        </SignedOut>
+      </div>
     </>
   );
 };

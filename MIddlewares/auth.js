@@ -13,7 +13,6 @@ const verifyToken = (req, res, next) => {
     if (!token) {
       throw new Error("No token provided");
     }
-    // console.log(token);
 
     const { normalizedEmail } = jwt.verify(token, process.env.SECRET_KEY);
 

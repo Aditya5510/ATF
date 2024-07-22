@@ -7,4 +7,6 @@ router.post("/register", userControllers.register);
 
 router.post("/opening", verifyToken, userControllers.createOpening);
 
+router.get("/getOpenings", verifyToken, userControllers.getUserJobs);
+
 module.exports = router;

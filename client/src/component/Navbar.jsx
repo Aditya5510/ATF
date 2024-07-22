@@ -17,8 +17,8 @@ import { useLoading } from "../contexts/LoadingContext";
 
 const navigation = [
   { name: "Home", href: "/" },
-  { name: "About", href: "/" },
-  { name: "Services", href: "/" },
+  { name: "Postings", href: "/jobs" },
+  { name: "features", href: "/features" },
   { name: "Contact", href: "/" },
 ];
 const postDetails = async (clerk_id, name, email, setIsLoading) => {
@@ -102,7 +102,7 @@ export default function Navbar() {
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 {navigation.map((item) => (
-                  <NavLink key={item.name} to={item.to}>
+                  <NavLink key={item.name} to={item.href}>
                     {item.name}
                   </NavLink>
                 ))}

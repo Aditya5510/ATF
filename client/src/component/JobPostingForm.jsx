@@ -1,6 +1,7 @@
 // JobPostingForm.js
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const JobPostingForm = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,8 @@ const JobPostingForm = () => {
     requirements: "",
     deadline: "",
   });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,21 +24,61 @@ const JobPostingForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log("Form submitted:", formData);
-    // Reset form after submission
-    setFormData({
-      title: "",
-      company: "",
-      location: "",
-      salary: "",
-      description: "",
-      requirements: "",
-      deadline: "",
-    });
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/user/opening`,
+        {
+          method: "POST",
+          headers: {
+            token: `${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Job posting submitted successfully:", data);
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Error submitting job posting:", error);
+    }
   };
+
+  const inputClasses =
+    "mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500";
+
+  if (isSubmitted) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white shadow-md rounded-lg p-6 text-center"
+      >
+        <h2 className="text-2xl font-semibold mb-4 text-green-600">
+          Job Posted Successfully!
+        </h2>
+        <p className="mb-6 text-gray-600">
+          Your job posting has been submitted and is now live.
+        </p>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate("/jobs")}
+          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          View Job
+        </motion.button>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -60,7 +103,7 @@ const JobPostingForm = () => {
               id="title"
               value={formData.title}
               onChange={handleChange}
-              className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              className={inputClasses}
               required
             />
           </div>
@@ -77,7 +120,7 @@ const JobPostingForm = () => {
               id="company"
               value={formData.company}
               onChange={handleChange}
-              className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              className={inputClasses}
               required
             />
           </div>
@@ -94,7 +137,7 @@ const JobPostingForm = () => {
               id="location"
               value={formData.location}
               onChange={handleChange}
-              className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              className={inputClasses}
               required
             />
           </div>
@@ -111,7 +154,7 @@ const JobPostingForm = () => {
               id="salary"
               value={formData.salary}
               onChange={handleChange}
-              className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              className={inputClasses}
               required
             />
           </div>
@@ -128,7 +171,7 @@ const JobPostingForm = () => {
               rows="3"
               value={formData.description}
               onChange={handleChange}
-              className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              className={inputClasses}
               required
             ></textarea>
           </div>
@@ -145,7 +188,7 @@ const JobPostingForm = () => {
               rows="3"
               value={formData.requirements}
               onChange={handleChange}
-              className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              className={inputClasses}
               required
             ></textarea>
           </div>
@@ -162,7 +205,7 @@ const JobPostingForm = () => {
               id="deadline"
               value={formData.deadline}
               onChange={handleChange}
-              className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              className={inputClasses}
               required
             />
           </div>

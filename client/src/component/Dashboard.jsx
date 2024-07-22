@@ -11,11 +11,11 @@ const Dashboard = () => {
   //   console.log(user);
   return (
     <Layout>
-      <h1 className="text-3xl font-semibold text-gray-800 mb-6">
+      <h1 className="text-3xl font-semibold text-gray-800 mb-6 ">
         Welcome , {user.firstName}
       </h1>
       <DashboardOverview />
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 ">
         <JobPostingForm />
         <AnalyticsCharts />
       </div>

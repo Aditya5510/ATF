@@ -32,7 +32,7 @@ const Hero = () => {
           </SignedOut>
           <SignedIn>
             <Link
-              to="/dashboard"
+              to="/"
               className="bg-white text-indigo-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-indigo-100 transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg hidden sm:inline-block"
             >
               hello

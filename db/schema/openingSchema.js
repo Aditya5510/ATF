@@ -47,6 +47,10 @@ const openingSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  joblink: {
+    type: String,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("Opening", openingSchema);
