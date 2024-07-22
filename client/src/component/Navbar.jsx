@@ -1,38 +1,45 @@
-"use client";
-import React, { useState } from "react";
-import { Dialog, DialogPanel } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import logo from "../assets/logo.svg";
+import React, { useState, useEffect } from "react";
 import {
+  useUser,
   SignedIn,
   SignedOut,
   SignInButton,
   UserButton,
-  useUser,
+  ClerkLoading,
 } from "@clerk/clerk-react";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import Drawer from "./Drawer"; // We'll create this component next
+import logo from "../assets/logo.svg"; // Make sure to import your logo
 import { Link } from "react-router-dom";
+import NavLink from "./NavLink";
+import Spinner from "./Spinner";
 
 const navigation = [
   { name: "Home", href: "/" },
-  { name: "Dashboard", href: "/dashboard" },
-  { name: "Create", href: "create" },
+  { name: "About", href: "/" },
+  { name: "Services", href: "/" },
+  { name: "Contact", href: "/" },
 ];
 
 const postDetails = async (clerk_id, name, email) => {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/user/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        clerk_id,
-        email,
-      }),
-    });
+    // console.log(clerk_id, name, email);
+    // console.log(import.meta.env.VITE_BACKEND_URL);
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/user/register`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          clerk_id,
+          email,
+        }),
+      }
+    );
     const data = await response.json();
-    // console.log(data);
   } catch (e) {
     console.log(e);
   }
@@ -40,108 +47,80 @@ const postDetails = async (clerk_id, name, email) => {
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const user = useUser();
+  const { user, isSignedIn } = useUser();
+  const [detailsPosted, setDetailsPosted] = useState(() => {
+    return localStorage.getItem("detailsPosted") === "true";
+  });
 
-  React.useEffect(() => {
-    const clerk_id = user.user?.id;
-    const name = user.user?.firstName;
-    const email = user.user?.emailAddresses[0].emailAddress;
+  useEffect(() => {
+    if (isSignedIn && !detailsPosted) {
+      const clerk_id = user?.id;
+      const name = user?.firstName;
+      const email = user?.emailAddresses[0].emailAddress;
 
-    if (user?.isSignedIn) {
-      postDetails(clerk_id, name, email);
+      postDetails(clerk_id, name, email).then(() => {
+        setDetailsPosted(true);
+        localStorage.setItem("detailsPosted", "true");
+      });
     }
-  }, [user?.isSignedIn]);
+    if (!isSignedIn) {
+      localStorage.setItem("detailsPosted", "false");
+    }
+  }, [isSignedIn, detailsPosted, user]);
 
   return (
-    <header className="absolute inset-x-0 top-0 z-50">
-      <nav
-        aria-label="Global"
-        className="flex items-center justify-between p-6 lg:px-8"
-      >
-        <div className="flex lg:flex-1">
-          <a href="#" className="-m-1.5 p-1.5">
-            <span className="sr-only">Your Company</span>
-            <img alt="" src={logo} className="h-8 w-auto" />
-          </a>
-        </div>
-        <div className="flex lg:hidden">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-          >
-            <span className="sr-only">Open main menu</span>
-            <Bars3Icon aria-hidden="true" className="h-6 w-6" />
-          </button>
-        </div>
-        <div className="hidden lg:flex lg:gap-x-12">
-          {navigation.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className="text-sm font-semibold leading-6 text-gray-900"
-            >
-              {item.name}
-            </a>
-          ))}
-        </div>
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <SignedOut>
-            <button className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-              <SignInButton />
-            </button>
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-        </div>
-      </nav>
-      <Dialog
-        open={mobileMenuOpen}
-        onClose={setMobileMenuOpen}
-        className="lg:hidden"
-      >
-        <div className="fixed inset-0 z-50" />
-        <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
-          <div className="flex items-center justify-between">
-            <a href="#" className="-m-1.5 p-1.5">
-              <span className="sr-only">Your Company</span>
-              <img alt="" src={logo} className="h-8 w-auto" />
-            </a>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(false)}
-              className="-m-2.5 rounded-md p-2.5 text-gray-700"
-            >
-              <span className="sr-only">Close menu</span>
-              <XMarkIcon aria-hidden="true" className="h-6 w-6" />
-            </button>
-          </div>
-          <div className="mt-6 flow-root">
-            <div className="-my-6 divide-y divide-gray-500/10">
-              <div className="space-y-2 py-6">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+        <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex-shrink-0">
+              <Link to="/" className="flex items-center">
+                <img className="h-8 w-auto" src={logo} alt="Your Company" />
+                <span className="ml-2 text-xl font-bold text-gray-800">
+                  ATF
+                </span>
+              </Link>
+            </div>
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-baseline space-x-4">
                 {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
+                  <NavLink key={item.name} to={item.to}>
                     {item.name}
-                  </a>
+                  </NavLink>
                 ))}
               </div>
-              <div className="py-6">
-                <SignedOut>
+            </div>
+            <div className="hidden md:block">
+              <SignedOut>
+                <button className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   <SignInButton />
-                </SignedOut>
-                <SignedIn>
-                  <UserButton />
-                </SignedIn>
-              </div>
+                </button>
+              </SignedOut>
+              <ClerkLoading>
+                <Spinner size={25} thickness={3} />
+              </ClerkLoading>
+
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+            </div>
+            <div className="md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+              >
+                <span className="sr-only">Open main menu</span>
+                <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+              </button>
             </div>
           </div>
-        </DialogPanel>
-      </Dialog>
-    </header>
+        </nav>
+        <Drawer
+          isOpen={mobileMenuOpen}
+          setIsOpen={setMobileMenuOpen}
+          navigation={navigation}
+        />
+      </header>
+    </>
   );
 }

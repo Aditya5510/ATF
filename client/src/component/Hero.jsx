@@ -1,54 +1,45 @@
-"use client";
 import React from "react";
+import { Link } from "react-router-dom";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
 
-export function Hero() {
+const Hero = () => {
+  const [detailsPosted, setDetailsPosted] = useState(() => {
+    return localStorage.getItem("detailsPosted") === "true";
+  });
+
   return (
-    <div className="bg-white">
-      <div className="relative isolate px-6 pt-14 lg:px-8">
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
-        >
-          <div
-            style={{
-              clipPath:
-                "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-            }}
-            className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
-          />
-        </div>
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-          <div className="text-center">
-            <h1 className="text-6xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Transform Your Talent Acquisition
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              Create job listings, access AI-powered resume assessments, and
-              find the best candidates faster than ever.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="/"
-                className="rounded-md bg-indigo-600 px-20  py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Get started
-              </a>
-            </div>
-          </div>
-        </div>
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
-        >
-          <div
-            style={{
-              clipPath:
-                "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-            }}
-            className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
-          />
+    <div className="bg-gradient-to-r from-indigo-600 to-blue-500 min-h-screen flex items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 animate-fade-in-down">
+          Streamline Your Hiring Process
+        </h1>
+        <p className="text-xl sm:text-2xl md:text-3xl text-indigo-100 mb-10 animate-fade-in-up">
+          Powerful ATS solution to transform your recruitment workflow
+        </p>
+        <div className="flex justify-center space-x-4 animate-fade-in">
+          <SignedOut>
+            <button className="bg-white text-indigo-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-indigo-100 transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg">
+              <SignInButton mode="modal">Get Started</SignInButton>
+            </button>
+          </SignedOut>
+          <SignedIn>
+            <Link
+              to="/dashboard"
+              className="bg-white text-indigo-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-indigo-100 transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg"
+            >
+              Go to Dashboard
+            </Link>
+          </SignedIn>
+          <Link
+            to="/features"
+            className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-indigo-600 transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg"
+          >
+            Explore Features
+          </Link>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default Hero;
