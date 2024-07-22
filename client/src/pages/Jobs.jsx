@@ -83,8 +83,13 @@ const jobs = () => {
     </div>
   );
 };
-
 const JobCard = ({ job, onViewApplicants }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpansion = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <motion.div
       initial={{ y: 50, opacity: 0 }}
@@ -92,15 +97,32 @@ const JobCard = ({ job, onViewApplicants }) => {
       transition={{ duration: 0.5 }}
       className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition duration-300"
     >
-      <div className="p-6">
-        <h2 className="text-2xl font-semibold mb-2 text-gray-800">
+      <div className="p-4 sm:p-6">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-gray-800">
           {job.title}
         </h2>
         <p className="text-indigo-600 font-medium mb-1">{job.company}</p>
-        <p className="text-gray-600 mb-4">{job.location}</p>
-        <div className="flex justify-between items-center">
+        <p className="text-sm text-gray-600 mb-4">{job.location}</p>
+
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="max-h-40 overflow-y-auto text-sm text-gray-700">
+                <p>{job.description}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
           <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
               job.isOpen
                 ? "bg-green-100 text-green-800"
                 : "bg-red-100 text-red-800"
@@ -108,14 +130,24 @@ const JobCard = ({ job, onViewApplicants }) => {
           >
             {job.isOpen ? "Open" : "Closed"}
           </span>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onViewApplicants}
-            className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition duration-300"
-          >
-            View Details
-          </motion.button>
+          <div className="flex flex-wrap gap-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleExpansion}
+              className="bg-gray-200 text-gray-800 px-3 py-1 text-sm rounded-md hover:bg-gray-300 transition duration-300"
+            >
+              {isExpanded ? "Hide Details" : "Show Details"}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onViewApplicants}
+              className="bg-indigo-500 text-white px-3 py-1 text-sm rounded-md hover:bg-indigo-600 transition duration-300"
+            >
+              View Applicants
+            </motion.button>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -129,53 +161,66 @@ const JobModal = ({ job, onClose }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto"
     >
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -50, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
       >
-        <div className="p-6">
-          <h2 className="text-3xl font-bold mb-4 text-gray-800">{job.title}</h2>
-          <p className="text-xl text-indigo-600 mb-2">{job.company}</p>
-          <p className="text-gray-600 mb-4">{job.location}</p>
-          <p className="text-gray-800 mb-4">{job.description}</p>
-          <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="p-4 sm:p-6">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-4 text-gray-800">
+            {job.title}
+          </h2>
+          <p className="text-lg sm:text-xl text-indigo-600 mb-1 sm:mb-2">
+            {job.company}
+          </p>
+          <p className="text-gray-600 mb-2 sm:mb-4">{job.location}</p>
+          <div className="mb-4 max-h-60 overflow-y-auto">
+            <p className="text-gray-800 text-sm sm:text-base">
+              {job.description}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-6">
             <div>
               <p className="font-semibold">Deadline</p>
-              <p>{job.deadline}</p>
+              <p className="text-sm sm:text-base">{job.deadline}</p>
             </div>
             <div>
               <p className="font-semibold">Status</p>
-              <p>{job.isOpen ? "Open" : "Closed"}</p>
+              <p className="text-sm sm:text-base">
+                {job.isOpen ? "Open" : "Closed"}
+              </p>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-1 sm:col-span-2">
               <p className="font-semibold">Application Link</p>
+
               <a
                 href={job.joblink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
+                className="text-blue-500 hover:underline text-sm sm:text-base break-all"
               >
                 {job.joblink}
               </a>
             </div>
           </div>
-          <h3 className="text-2xl font-semibold mb-4">Applicants</h3>
+          <h3 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-4">
+            Applicants
+          </h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ATS Score
                   </th>
                 </tr>
@@ -183,13 +228,13 @@ const JobModal = ({ job, onClose }) => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {job.applicants.map((applicant) => (
                   <tr key={applicant.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm">
                       {applicant.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm">
                       {applicant.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm">
                       {applicant.atsScore}
                     </td>
                   </tr>
@@ -202,7 +247,7 @@ const JobModal = ({ job, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+            className="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:text-sm"
           >
             Close
           </button>

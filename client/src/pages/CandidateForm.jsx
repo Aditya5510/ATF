@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 
 const CandidateForm = () => {
   const [showForm, setShowForm] = useState(false);
@@ -20,16 +21,6 @@ const CandidateForm = () => {
   });
 
   const { id } = useParams();
-  //   console.log(id);
-
-  //   const jobDetails = {
-  //     title: "Software Engineer",
-  //     company: "Helix",
-  //     location: "Gurugram",
-  //     description: "sadnaksjndjaksndkjas",
-  //     deadline: "2024-07-17",
-  //     status: "Open",
-  //   };
 
   React.useEffect(() => {
     const fetchJobDetails = async () => {
@@ -67,6 +58,17 @@ const CandidateForm = () => {
     e.preventDefault();
     console.log(formData);
   };
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
+  const toggleDescription = () => {
+    setIsDescriptionExpanded(!isDescriptionExpanded);
+  };
+
+  const truncateDescription = (text, maxLength = 150) => {
+    if (!text) return ""; // Return empty string if text is undefined or null
+    if (text.length <= maxLength) return text;
+    return text.substr(0, maxLength) + "...";
+  };
 
   const fadeIn = {
     initial: { opacity: 0 },
@@ -77,44 +79,72 @@ const CandidateForm = () => {
   return (
     <div className="bg-gradient-to-b from-blue-50 to-white min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        <motion.div {...fadeIn}>
-          <h2 className="text-4xl font-bold text-center text-blue-800 mb-6">
-            {jobDetails.title}
-          </h2>
-          <div className="bg-blue-50 p-6 rounded-lg mb-8">
-            <h3 className="text-2xl font-semibold text-blue-900 mb-4">
-              Job Details
-            </h3>
-            <p className="text-lg text-blue-800 mb-2">
-              <span className="font-medium">Company:</span> {jobDetails.company}
-            </p>
-            <p className="text-lg text-blue-800 mb-2">
-              <span className="font-medium">Location:</span>{" "}
-              {jobDetails.location}
-            </p>
-            <p className="text-lg text-blue-800 mb-2">
-              <span className="font-medium">Description:</span>{" "}
-              {jobDetails.description}
-            </p>
-            <p className="text-lg text-blue-800 mb-2">
-              <span className="font-medium">Deadline:</span>{" "}
-              {jobDetails.deadline}
-            </p>
-            <p className="text-lg text-blue-800">
-              <span className="font-medium">Status:</span> {jobDetails.status}
-            </p>
-          </div>
-          {!showForm && (
-            <motion.button
-              onClick={() => setShowForm(true)}
-              className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl hover:bg-blue-700 transition duration-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Apply Now
-            </motion.button>
-          )}
-        </motion.div>
+        {loading ? (
+          <Skeleton />
+        ) : error ? (
+          <div className="text-red-600 text-center">{error}</div>
+        ) : (
+          <motion.div {...fadeIn}>
+            <h2 className="text-4xl font-bold text-center text-blue-800 mb-6">
+              {jobDetails.title || "Job Title"}
+            </h2>
+            <div className="bg-blue-50 p-6 rounded-lg mb-8">
+              <h3 className="text-2xl font-semibold text-blue-900 mb-4">
+                Job Details
+              </h3>
+              <p className="text-lg text-blue-800 mb-2">
+                <span className="font-medium">Company:</span>{" "}
+                {jobDetails.company || "N/A"}
+              </p>
+              <p className="text-lg text-blue-800 mb-2">
+                <span className="font-medium">Location:</span>{" "}
+                {jobDetails.location || "N/A"}
+              </p>
+              <div className="text-lg text-blue-800 mb-2">
+                <span className="font-medium">Description:</span>{" "}
+                {jobDetails.description && (
+                  <div className="mt-2">
+                    <ReactMarkdown className="prose max-w-none">
+                      {isDescriptionExpanded
+                        ? jobDetails.description
+                        : truncateDescription(jobDetails.description)}
+                    </ReactMarkdown>
+                    {jobDetails.description.length > 150 && (
+                      <button
+                        onClick={toggleDescription}
+                        className="mt-2 text-blue-600 hover:text-blue-800 underline focus:outline-none"
+                      >
+                        {isDescriptionExpanded ? "Show less" : "Show more"}
+                      </button>
+                    )}
+                  </div>
+                )}
+                {!jobDetails.description && (
+                  <span>No description available</span>
+                )}
+              </div>
+              <p className="text-lg text-blue-800 mb-2">
+                <span className="font-medium">Deadline:</span>{" "}
+                {jobDetails.deadline || "N/A"}
+              </p>
+              <p className="text-lg text-blue-800">
+                <span className="font-medium">Status:</span>{" "}
+                {jobDetails.status || "N/A"}
+              </p>
+            </div>
+
+            {!showForm && (
+              <motion.button
+                onClick={() => setShowForm(true)}
+                className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl hover:bg-blue-700 transition duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Apply Now
+              </motion.button>
+            )}
+          </motion.div>
+        )}
 
         {showForm && (
           <motion.form
@@ -282,5 +312,25 @@ const CandidateForm = () => {
     </div>
   );
 };
+
+const Skeleton = () => (
+  <div className="animate-pulse">
+    <div className="h-8 bg-blue-200 rounded w-3/4 mb-6"></div>
+    <div className="bg-blue-100 p-6 rounded-lg mb-8">
+      <div className="h-6 bg-blue-200 rounded w-1/4 mb-4"></div>
+      <div className="space-y-3">
+        <div className="h-4 bg-blue-200 rounded w-5/6"></div>
+        <div className="h-4 bg-blue-200 rounded w-4/6"></div>
+        <div className="h-4 bg-blue-200 rounded w-3/6"></div>
+      </div>
+      <div className="mt-4 space-y-3">
+        <div className="h-4 bg-blue-200 rounded w-5/6"></div>
+        <div className="h-4 bg-blue-200 rounded w-4/6"></div>
+        <div className="h-4 bg-blue-200 rounded w-3/6"></div>
+      </div>
+    </div>
+    <div className="h-12 bg-blue-200 rounded w-full"></div>
+  </div>
+);
 
 export default CandidateForm;
