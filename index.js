@@ -9,11 +9,9 @@ env.config();
 
 //middleware
 app.use(express.json());
-
-//accepting request from all origins
 app.use(
   cors({
-    origin: "*",
+    origin: ["http://localhost:5173", "https://navigwall.vercel.app"],
   })
 );
 
