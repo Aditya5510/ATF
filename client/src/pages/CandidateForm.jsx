@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useParams } from "react-router-dom";
 
 const CandidateForm = () => {
   const [showForm, setShowForm] = useState(false);
   const [step, setStep] = useState(1);
+  const [jobDetails, setJobdetails] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -14,14 +19,38 @@ const CandidateForm = () => {
     letter: "",
   });
 
-  const jobDetails = {
-    title: "Software Engineer",
-    company: "Helix",
-    location: "Gurugram",
-    description: "sadnaksjndjaksndkjas",
-    deadline: "2024-07-17",
-    status: "Open",
-  };
+  const { id } = useParams();
+  //   console.log(id);
+
+  //   const jobDetails = {
+  //     title: "Software Engineer",
+  //     company: "Helix",
+  //     location: "Gurugram",
+  //     description: "sadnaksjndjaksndkjas",
+  //     deadline: "2024-07-17",
+  //     status: "Open",
+  //   };
+
+  React.useEffect(() => {
+    const fetchJobDetails = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/user/jobopening/${id}`
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setJobdetails(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobDetails();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;

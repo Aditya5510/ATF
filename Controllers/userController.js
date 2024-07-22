@@ -3,6 +3,7 @@ const openingSchema = require("../db/schema/openingSchema");
 const applicantSchema = require("../db/schema/applicantSchema");
 const jwt = require("jsonwebtoken");
 const secretKey = process.env.SECRET_KEY;
+const mongoose = require("mongoose");
 
 const register = async (req, res) => {
   try {
@@ -77,7 +78,9 @@ const createOpening = async (req, res) => {
       isOpen: true,
       date: new Date(),
     });
-    //${process.env.BASE_URL}/apply/${joblink}
+    const joblink = ` ${process.env.BASE_URL}apply/${newOpening._id}`;
+
+    newOpening.joblink = joblink;
 
     // Save the opening
     await newOpening.save();
@@ -149,5 +152,41 @@ const getUserJobs = async (req, res) => {
     });
   }
 };
+const getOpening = (req, res) => {
+  let { jobId } = req.params;
 
-module.exports = { register, createOpening, getUserJobs };
+  if (!mongoose.Types.ObjectId.isValid(jobId)) {
+    return res.status(400).json({ message: "Invalid job ID format" });
+  }
+
+  // Ensure jobId is in ObjectId format
+  jobId = new mongoose.Types.ObjectId(jobId);
+
+  openingSchema
+    .findById(jobId)
+    .then((job) => {
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+
+      // Transform the data to the required format
+      const formattedJob = {
+        title: job.title,
+        company: job.company,
+        location: job.location,
+        description: job.description,
+        deadline: job.deadline.toISOString().split("T")[0], // Format the date to YYYY-MM-DD
+        status: job.isOpen ? "Open" : "Closed",
+      };
+
+      res.status(200).json(formattedJob);
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Error fetching job",
+        error: err.message,
+      });
+    });
+};
+
+module.exports = { register, createOpening, getUserJobs, getOpening };
