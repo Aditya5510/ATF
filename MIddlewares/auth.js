@@ -16,8 +16,6 @@ const verifyToken = (req, res, next) => {
 
     const { normalizedEmail } = jwt.verify(token, process.env.SECRET_KEY);
 
-    // console.log(normalizedEmail);
-
     req.body = {
       ...req.body,
       normalizedEmail,

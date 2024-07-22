@@ -62,9 +62,6 @@ const createOpening = async (req, res) => {
       });
     }
 
-    // const joblink = crypto.randomBytes(10).toString("hex");
-
-    // Create new opening
     const newOpening = new openingSchema({
       title,
       company,
@@ -78,7 +75,8 @@ const createOpening = async (req, res) => {
       isOpen: true,
       date: new Date(),
     });
-    const joblink = ` ${process.env.BASE_URL}apply/${newOpening._id}`;
+    const joblink = `${process.env.BASE_URL}/apply/${newOpening._id}`;
+    // console.log(joblink);
 
     newOpening.joblink = joblink;
 
@@ -126,7 +124,7 @@ const getUserJobs = async (req, res) => {
         const applicantsWithAts = applicants.map((applicant, index) => ({
           id: index + 1,
           ...applicant,
-          atsScore: Math.floor(Math.random() * 31) + 70, // Random score between 70 and 100
+          atsScore: Math.floor(Math.random() * 31) + 70,
         }));
 
         return {
