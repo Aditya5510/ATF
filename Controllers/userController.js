@@ -47,6 +47,8 @@ const createOpening = async (req, res) => {
     salary,
     description,
     date,
+    requirements,
+    deadline,
     normalizedEmail,
   } = req.body;
 
@@ -67,6 +69,8 @@ const createOpening = async (req, res) => {
       description,
       user: user._id,
       date,
+      requirements,
+      deadline,
       isOpen: true,
     });
 

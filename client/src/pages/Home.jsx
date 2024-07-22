@@ -8,15 +8,16 @@ import {
   ClerkLoading,
 } from "@clerk/clerk-react";
 import Hero from "../component/Hero";
+import CreateJobModal from "../component/CreateJobModel";
+import Dashboard from "../component/Dashboard";
 
 const Home = () => {
   return (
     <>
       <SignedIn>
-        <div className="flex justify-center items-center h-screen">
-          <div className="text-3xl font-semibold text-center">
-            Welcome to your Clerk app!
-          </div>
+        <div className="mt-10">
+          {" "}
+          <Dashboard />
         </div>
       </SignedIn>
       <SignedOut>

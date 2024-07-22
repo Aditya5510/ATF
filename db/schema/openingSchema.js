@@ -35,6 +35,14 @@ const openingSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  requirements: {
+    type: String,
+    required: true,
+  },
+  deadline: {
+    type: Date,
+    required: true,
+  },
   isOpen: {
     type: Boolean,
     default: true,

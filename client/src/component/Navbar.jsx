@@ -8,11 +8,12 @@ import {
   ClerkLoading,
 } from "@clerk/clerk-react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import Drawer from "./Drawer"; // We'll create this component next
-import logo from "../assets/logo.svg"; // Make sure to import your logo
+import Drawer from "./Drawer";
+import logo from "../assets/logo.svg";
 import { Link } from "react-router-dom";
 import NavLink from "./NavLink";
 import Spinner from "./Spinner";
+import { useLoading } from "../contexts/LoadingContext";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -20,11 +21,9 @@ const navigation = [
   { name: "Services", href: "/" },
   { name: "Contact", href: "/" },
 ];
-
-const postDetails = async (clerk_id, name, email) => {
+const postDetails = async (clerk_id, name, email, setIsLoading) => {
   try {
-    // console.log(clerk_id, name, email);
-    // console.log(import.meta.env.VITE_BACKEND_URL);
+    setIsLoading(true);
     const response = await fetch(
       `${import.meta.env.VITE_BACKEND_URL}/user/register`,
       {
@@ -40,33 +39,52 @@ const postDetails = async (clerk_id, name, email) => {
       }
     );
     const data = await response.json();
+    if (data?.message === "ok") {
+      localStorage.setItem("token", data?.token);
+      return true;
+    } else {
+      throw new Error(data.message);
+    }
   } catch (e) {
     console.log(e);
+    return false;
+  } finally {
+    setIsLoading(false);
   }
 };
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, isSignedIn } = useUser();
-  const [detailsPosted, setDetailsPosted] = useState(() => {
-    return localStorage.getItem("detailsPosted") === "true";
-  });
+  const { user, isSignedIn, isLoaded } = useUser();
+  const { setIsLoading } = useLoading();
 
-  useEffect(() => {
-    if (isSignedIn && !detailsPosted) {
-      const clerk_id = user?.id;
-      const name = user?.firstName;
-      const email = user?.emailAddresses[0].emailAddress;
+  React.useEffect(() => {
+    const handleAuth = async () => {
+      if (isSignedIn) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          const clerk_id = user?.id;
+          const name = user?.firstName;
+          const email = user?.emailAddresses[0].emailAddress;
+          const success = await postDetails(
+            clerk_id,
+            name,
+            email,
+            setIsLoading
+          );
+          if (success) {
+            // console.log("Details posted and token saved successfully");
+          }
+        }
+      } else {
+        localStorage.removeItem("token");
+      }
+    };
 
-      postDetails(clerk_id, name, email).then(() => {
-        setDetailsPosted(true);
-        localStorage.setItem("detailsPosted", "true");
-      });
+    if (isLoaded) {
+      handleAuth();
     }
-    if (!isSignedIn) {
-      localStorage.setItem("detailsPosted", "false");
-    }
-  }, [isSignedIn, detailsPosted, user]);
+  }, [isSignedIn, isLoaded, user]);
 
   return (
     <>
