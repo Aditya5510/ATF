@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import Spinner from "../component/Spinner";
 
 const jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchJobs = async () => {
     const token = localStorage.getItem("token");
@@ -23,8 +25,9 @@ const jobs = () => {
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
+      } else {
+        setLoading(false);
       }
-
       const data = await response.json();
       setJobs(data);
     } catch (error) {
@@ -42,26 +45,41 @@ const jobs = () => {
         <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-12">
           Your Job Postings
         </h1>
-        {jobs.length === 0 && (
+        {jobs?.length === 0 && (
           <p className="text-center text-lg text-gray-600">
             You have not posted any jobs yet.
           </p>
         )}
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {jobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              onViewApplicants={() => setSelectedJob(job)}
-            />
-          ))}
-        </div>
-      </div>
-      <AnimatePresence>
-        {selectedJob && (
-          <JobModal job={selectedJob} onClose={() => setSelectedJob(null)} />
+
+        {loading === false ? (
+          <>
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {jobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  onViewApplicants={() => setSelectedJob(job)}
+                />
+              ))}
+            </div>
+
+            <AnimatePresence>
+              {selectedJob && (
+                <JobModal
+                  job={selectedJob}
+                  onClose={() => setSelectedJob(null)}
+                />
+              )}
+            </AnimatePresence>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-center h-[60vh] w-full">
+              <Spinner color="blue" thickness={4} size={40} />
+            </div>
+          </>
         )}
-      </AnimatePresence>
+      </div>
     </div>
   );
 };

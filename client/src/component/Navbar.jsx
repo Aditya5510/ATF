@@ -19,7 +19,7 @@ const navigation = [
   { name: "Home", href: "/" },
   { name: "Postings", href: "/jobs" },
   { name: "features", href: "/features" },
-  { name: "Contact", href: "/" },
+  { name: "Contact", href: "/application" },
 ];
 const postDetails = async (clerk_id, name, email, setIsLoading) => {
   try {

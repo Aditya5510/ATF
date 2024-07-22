@@ -7,6 +7,7 @@ import Jobs from "./pages/Jobs";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import SignInp from "./pages/SignInp";
 import Features from "./pages/Features";
+import CandidateForm from "./pages/CandidateForm";
 
 export default function App() {
   return (
@@ -29,6 +30,8 @@ export default function App() {
             <Route path="*" element={<h1>Not Found</h1>} />
             <Route path="/features" element={<Features />} />
             <Route path="/sign-in" element={<SignInp />} />
+
+            <Route path="/application" element={<CandidateForm />} />
           </Routes>
         </LoadingProvider>
       </BrowserRouter>
