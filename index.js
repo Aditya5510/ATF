@@ -24,6 +24,7 @@ connectDB();
 //Routes
 
 app.use("/user", require("./Routes/userRoutes"));
+app.use("/applicant", require("./Routes/applicantRoutes"));
 
 //server setup
 app.listen(process.env.PORT, (req, res) => {

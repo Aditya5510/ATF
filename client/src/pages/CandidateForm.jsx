@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import { Toaster, toast } from "react-hot-toast";
 
 const CandidateForm = () => {
   const [showForm, setShowForm] = useState(false);
@@ -9,6 +10,10 @@ const CandidateForm = () => {
   const [jobDetails, setJobdetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isResumeUploading, setIsResumeUploading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -16,10 +21,9 @@ const CandidateForm = () => {
     college: "",
     degree: "",
     cgpa: "",
-    resume: null,
+    resumeText: "",
     letter: "",
   });
-
   const { id } = useParams();
 
   React.useEffect(() => {
@@ -45,27 +49,116 @@ const CandidateForm = () => {
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === "file" ? files[0] : value,
-    }));
+    if (type === "file") {
+      handleFileUpload(files[0]);
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Invalid email format";
+    if (!formData.college.trim()) newErrors.college = "College is required";
+    if (!formData.degree.trim()) newErrors.degree = "Degree is required";
+    if (!formData.cgpa.trim()) newErrors.cgpa = "CGPA is required";
+    else if (
+      isNaN(formData.cgpa) ||
+      parseFloat(formData.cgpa) < 0 ||
+      parseFloat(formData.cgpa) > 10
+    )
+      newErrors.cgpa = "Invalid CGPA";
+    if (!formData.resumeText.trim())
+      newErrors.resumeText = "Resume is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    setIsSubmitting(true);
+    const loadingToast = toast.loading("Submitting your application...");
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/applicant/application/${id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Application submission failed");
+      }
+
+      toast.success("Application submitted successfully!", {
+        id: loadingToast,
+      });
+      // Reset form or redirect user
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      toast.error(error.message, { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFileUpload = async (file) => {
+    setIsResumeUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("language", "eng");
+    formData.append("apikey", import.meta.env.VITE_OCR_KEY);
+    formData.append("isOverlayRequired", "false");
+
+    try {
+      const response = await fetch("https://api.ocr.space/parse/image", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`OCR request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.ParsedResults && data.ParsedResults.length > 0) {
+        const ocrResult = data.ParsedResults[0].ParsedText;
+        setFormData((prevData) => ({
+          ...prevData,
+          resumeText: ocrResult,
+        }));
+      } else {
+        throw new Error("OCR processing failed: No parsed results");
+      }
+    } catch (error) {
+      console.error("Error processing resume:", error);
+    } finally {
+      setIsResumeUploading(false);
+    }
+  };
   const toggleDescription = () => {
     setIsDescriptionExpanded(!isDescriptionExpanded);
   };
 
   const truncateDescription = (text, maxLength = 150) => {
-    if (!text) return ""; // Return empty string if text is undefined or null
+    if (!text) return "";
     if (text.length <= maxLength) return text;
     return text.substr(0, maxLength) + "...";
   };
@@ -78,6 +171,7 @@ const CandidateForm = () => {
 
   return (
     <div className="bg-gradient-to-b from-blue-50 to-white min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <Toaster position="top-center" reverseOrder={false} />
       <div className="max-w-4xl w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
         {loading ? (
           <Skeleton />
@@ -167,10 +261,15 @@ const CandidateForm = () => {
                       name="name"
                       type="text"
                       required
-                      className="w-full px-4 py-3 border border-blue-300 rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={`w-full px-4 py-3 border ${
+                        errors.name ? "border-red-500" : "border-blue-300"
+                      } rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                       value={formData.name}
                       onChange={handleChange}
                     />
+                    {errors.name && (
+                      <p className="mt-2 text-sm text-red-600">{errors.name}</p>
+                    )}
                   </div>
                   <div>
                     <label
@@ -184,10 +283,17 @@ const CandidateForm = () => {
                       name="email"
                       type="email"
                       required
-                      className="w-full px-4 py-3 border border-blue-300 rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={`w-full px-4 py-3 border ${
+                        errors.email ? "border-red-500" : "border-blue-300"
+                      } rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                       value={formData.email}
                       onChange={handleChange}
                     />
+                    {errors.email && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.email}
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -206,10 +312,17 @@ const CandidateForm = () => {
                       name="college"
                       type="text"
                       required
-                      className="w-full px-4 py-3 border border-blue-300 rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={`w-full px-4 py-3 border ${
+                        errors.college ? "border-red-500" : "border-blue-300"
+                      } rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                       value={formData.college}
                       onChange={handleChange}
                     />
+                    {errors.college && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.college}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label
@@ -223,10 +336,17 @@ const CandidateForm = () => {
                       name="degree"
                       type="text"
                       required
-                      className="w-full px-4 py-3 border border-blue-300 rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={`w-full px-4 py-3 border ${
+                        errors.degree ? "border-red-500" : "border-blue-300"
+                      } rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                       value={formData.degree}
                       onChange={handleChange}
                     />
+                    {errors.degree && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.degree}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label
@@ -239,10 +359,16 @@ const CandidateForm = () => {
                       id="cgpa"
                       name="cgpa"
                       type="text"
-                      className="w-full px-4 py-3 border border-blue-300 rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      className={`w-full px-4 py-3 border ${
+                        errors.cgpa ? "border-red-500" : "border-blue-300"
+                      } rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                       value={formData.cgpa}
                       onChange={handleChange}
                     />
+                    {errors.cgpa && (
+                      <p className="mt-2 text-sm text-red-600">{errors.cgpa}</p>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -254,23 +380,33 @@ const CandidateForm = () => {
                       htmlFor="resume"
                       className="block text-xl font-medium text-blue-900 mb-2"
                     >
-                      Resume
+                      Upload Resume
                     </label>
                     <input
                       id="resume"
                       name="resume"
                       type="file"
-                      required
-                      className="w-full px-4 py-3 border border-blue-300 rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      accept=".pdf,.doc,.docx"
                       onChange={handleChange}
+                      className="w-full px-4 py-3 border border-blue-300 rounded-md shadow-sm text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
+                    {isResumeUploading && (
+                      <p className="mt-2 text-sm text-blue-600">
+                        Uploading resume...
+                      </p>
+                    )}
+                    {errors.resumeText && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.resumeText}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label
                       htmlFor="letter"
                       className="block text-xl font-medium text-blue-900 mb-2"
                     >
-                      Cover Letter
+                      Cover Letter (Optional)
                     </label>
                     <textarea
                       id="letter"
@@ -284,27 +420,61 @@ const CandidateForm = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            <div className="flex justify-between pt-6">
-              <button
-                type="button"
-                onClick={prevStep}
-                className={`${
-                  step > 1
-                    ? "bg-indigo-600 hover:bg-indigo-700"
-                    : "bg-gray-300 cursor-not-allowed"
-                } text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300`}
-                disabled={step === 1}
-              >
-                Previous
-              </button>
-              <button
-                type={step < 3 ? "button" : "submit"}
-                onClick={step < 3 ? nextStep : undefined}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300"
-              >
-                {step < 3 ? "Next" : "Submit"}
-              </button>
+            <div className="flex justify-between">
+              {step > 1 && (
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 transition duration-300 disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  Previous
+                </button>
+              )}
+              {step < 3 ? (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-300 disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition duration-300 disabled:opacity-50 flex items-center"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Application"
+                  )}
+                </button>
+              )}
             </div>
           </motion.form>
         )}

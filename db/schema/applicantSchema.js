@@ -39,6 +39,16 @@ const applicantSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+
+  status: {
+    type: String,
+    enum: ["Applied", "Shortlisted", "Accepted", "Rejected"],
+    default: "Applied",
+  },
+  ATS: {
+    type: String,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("Applicant", applicantSchema);
