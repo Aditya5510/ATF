@@ -2,8 +2,9 @@ const userSchema = require("../db/schema/userSchema");
 const openingSchema = require("../db/schema/openingSchema");
 const applicantSchema = require("../db/schema/applicantSchema");
 const jwt = require("jsonwebtoken");
-const secretKey = process.env.SECRET_KEY;
 const mongoose = require("mongoose");
+
+const secretKey = process.env.SECRET_KEY;
 
 const register = async (req, res) => {
   try {
@@ -54,7 +55,6 @@ const createOpening = async (req, res) => {
   } = req.body;
 
   try {
-    // Find the user by normalized email
     const user = await userSchema.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(400).json({
@@ -76,21 +76,16 @@ const createOpening = async (req, res) => {
       date: new Date(),
     });
     const joblink = `${process.env.BASE_URL}/apply/${newOpening._id}`;
-    // console.log(joblink);
 
     newOpening.joblink = joblink;
 
-    // Save the opening
     await newOpening.save();
 
-    // Add the opening to the user's openings array
     user.openings.push(newOpening._id);
     await user.save();
 
-    console.log("Opening created successfully");
     return res.status(201).json({
       message: "ok",
-      // data: newOpening,
     });
   } catch (error) {
     console.error("Error creating opening:", error);
@@ -100,6 +95,7 @@ const createOpening = async (req, res) => {
     });
   }
 };
+
 const getUserJobs = async (req, res) => {
   try {
     const { normalizedEmail } = req.body;
@@ -118,13 +114,13 @@ const getUserJobs = async (req, res) => {
       jobs.map(async (job) => {
         const applicants = await applicantSchema
           .find({ opening: job._id })
-          .select("name email -_id")
+          .select("name email -_id ATS")
           .lean();
 
         const applicantsWithAts = applicants.map((applicant, index) => ({
           id: index + 1,
           ...applicant,
-          atsScore: Math.floor(Math.random() * 31) + 70,
+          atsScore: applicant.ATS,
         }));
 
         return {
@@ -133,7 +129,7 @@ const getUserJobs = async (req, res) => {
           company: job.company,
           location: job.location,
           description: job.description,
-          deadline: job.deadline.toISOString().split("T")[0], // Format date as YYYY-MM-DD
+          deadline: job.deadline.toISOString().split("T")[0],
           isOpen: job.isOpen,
           joblink: job.joblink,
           applicants: applicantsWithAts,
@@ -150,6 +146,7 @@ const getUserJobs = async (req, res) => {
     });
   }
 };
+
 const getOpening = (req, res) => {
   let { jobId } = req.params;
 
@@ -157,7 +154,6 @@ const getOpening = (req, res) => {
     return res.status(400).json({ message: "Invalid job ID format" });
   }
 
-  // Ensure jobId is in ObjectId format
   jobId = new mongoose.Types.ObjectId(jobId);
 
   openingSchema
@@ -167,13 +163,12 @@ const getOpening = (req, res) => {
         return res.status(404).json({ message: "Job not found" });
       }
 
-      // Transform the data to the required format
       const formattedJob = {
         title: job.title,
         company: job.company,
         location: job.location,
         description: job.description,
-        deadline: job.deadline.toISOString().split("T")[0], // Format the date to YYYY-MM-DD
+        deadline: job.deadline.toISOString().split("T")[0],
         status: job.isOpen ? "Open" : "Closed",
       };
 
@@ -187,4 +182,56 @@ const getOpening = (req, res) => {
     });
 };
 
-module.exports = { register, createOpening, getUserJobs, getOpening };
+const compOpening = async (req, res) => {
+  let { jobId } = req.params;
+
+  // console.log(jobId);
+
+  if (!mongoose.Types.ObjectId.isValid(jobId)) {
+    return res.status(400).json({ message: "Invalid job ID format" });
+  }
+
+  jobId = new mongoose.Types.ObjectId(jobId);
+
+  try {
+    const opening = await openingSchema.findById(jobId).lean();
+
+    if (!opening) {
+      return res.status(404).json({ message: "Job opening not found" });
+    }
+
+    const applicants = await applicantSchema.find({ opening: jobId }).lean();
+
+    const response = {
+      ...opening,
+      applicants: applicants.map((applicant) => ({
+        id: applicant._id,
+        name: applicant.name,
+        email: applicant.email,
+        college: applicant.college,
+        degree: applicant.degree,
+        cgpa: applicant.cgpa,
+        status: applicant.status,
+        atsScore: applicant.ATS,
+      })),
+    };
+
+    response.totalApplicants = applicants.length;
+    response.shortlistedApplicants = applicants.filter(
+      (a) => a.status === "Shortlisted"
+    ).length;
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error fetching job details:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports = {
+  register,
+  createOpening,
+  getUserJobs,
+  getOpening,
+  compOpening,
+};

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import Spinner from "../component/Spinner";
 
+import { Link } from "react-router-dom";
+
 const jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -98,9 +100,17 @@ const JobCard = ({ job, onViewApplicants }) => {
       className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition duration-300"
     >
       <div className="p-4 sm:p-6">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-gray-800">
-          {job.title}
-        </h2>
+        <div className="flex justify-between items-start mb-2">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+            {job.title}
+          </h2>
+          <Link
+            to={`/job/${job.id}`}
+            className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full hover:bg-yellow-600 transition duration-300"
+          >
+            Details
+          </Link>
+        </div>
         <p className="text-indigo-600 font-medium mb-1">{job.company}</p>
         <p className="text-sm text-gray-600 mb-4">{job.location}</p>
 

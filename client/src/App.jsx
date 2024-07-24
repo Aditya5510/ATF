@@ -10,6 +10,7 @@ import Features from "./pages/Features";
 import CandidateForm from "./pages/CandidateForm";
 import MainLayout from "./component/MainLayout";
 import BlankLayout from "./component/BlankLayout";
+import JobDetailsPage from "./pages/JobDetailsPage";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
               <Route path="*" element={<h1>Not Found</h1>} />
               <Route path="/features" element={<Features />} />
               <Route path="/sign-in" element={<SignInp />} />
+              <Route path="/job/:jobId" element={<JobDetailsPage />} />
             </Route>
             <Route element={<BlankLayout />}>
               <Route path="/apply/:id" element={<CandidateForm />} />

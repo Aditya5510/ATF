@@ -19,7 +19,6 @@ const Dashboard = () => {
         <JobPostingForm />
         <AnalyticsCharts />
       </div>
-      <CandidateTable />
     </Layout>
   );
 };

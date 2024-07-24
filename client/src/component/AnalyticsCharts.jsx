@@ -1,25 +1,21 @@
-// AnalyticsCharts.js
 import React from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 import { motion } from "framer-motion";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
 
-const AnalyticsCharts = () => {
+const AnalyticsCharts = ({ totalApplicants, shortlistedApplicants }) => {
   const data = [
-    { name: "Jan", applications: 65, hires: 4 },
-    { name: "Feb", applications: 59, hires: 3 },
-    { name: "Mar", applications: 80, hires: 5 },
-    { name: "Apr", applications: 81, hires: 6 },
-    { name: "May", applications: 56, hires: 4 },
-    { name: "Jun", applications: 55, hires: 3 },
+    { name: "Shortlisted", value: shortlistedApplicants },
+    { name: "Others", value: totalApplicants - shortlistedApplicants },
   ];
+
+  const COLORS = ["#10B981", "#6B7280"];
 
   return (
     <motion.div
@@ -28,16 +24,38 @@ const AnalyticsCharts = () => {
       transition={{ duration: 0.5 }}
       className="bg-white p-6 rounded-lg shadow-md"
     >
-      <h2 className="text-xl font-semibold mb-4">Applications vs Hires</h2>
+      <h2 className="text-2xl font-semibold mb-4">Application Analytics</h2>
+      <div className="mb-4">
+        <p className="text-gray-600">Total Applicants</p>
+        <p className="text-3xl font-bold">{totalApplicants}</p>
+      </div>
+      <div className="mb-4">
+        <p className="text-gray-600">Shortlisted Applicants</p>
+        <p className="text-3xl font-bold text-green-600">
+          {shortlistedApplicants}
+        </p>
+      </div>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data}>
-          <XAxis dataKey="name" />
-          <YAxis />
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
           <Tooltip />
           <Legend />
-          <Bar dataKey="applications" fill="#3b82f6" />
-          <Bar dataKey="hires" fill="#10b981" />
-        </BarChart>
+        </PieChart>
       </ResponsiveContainer>
     </motion.div>
   );

@@ -11,4 +11,6 @@ router.get("/getOpenings", verifyToken, userControllers.getUserJobs);
 
 router.get("/jobopening/:jobId", userControllers.getOpening);
 
+router.get("/job/:jobId", userControllers.compOpening);
+
 module.exports = router;
