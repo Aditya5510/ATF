@@ -228,10 +228,41 @@ const compOpening = async (req, res) => {
   }
 };
 
+const toggleJobStatus = async (req, res) => {
+  let { jobId } = req.params;
+  const { isOpen } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(jobId)) {
+    return res.status(400).json({ message: "Invalid job ID format" });
+  }
+
+  jobId = new mongoose.Types.ObjectId(jobId);
+
+  try {
+    const updatedJob = await openingSchema.findByIdAndUpdate(
+      jobId,
+      { isOpen },
+      { new: true }
+    );
+
+    if (!updatedJob) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    res.json({
+      message: "ok",
+    });
+  } catch (error) {
+    console.error("Error updating job status:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   register,
   createOpening,
   getUserJobs,
   getOpening,
   compOpening,
+  toggleJobStatus,
 };

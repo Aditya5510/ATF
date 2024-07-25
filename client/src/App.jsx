@@ -1,3 +1,5 @@
+import React from "react";
+import { Toaster } from "react-hot-toast";
 import Navbar from "./component/Navbar";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -18,7 +20,6 @@ export default function App() {
       <BrowserRouter>
         <LoadingProvider>
           <GlobalLoader />
-
           <Routes>
             <Route element={<MainLayout />}>
               <Route path="/" element={<Home />} />
@@ -41,6 +42,35 @@ export default function App() {
           </Routes>
         </LoadingProvider>
       </BrowserRouter>
+
+      {/* Add the Toaster component here */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          // Default options for all toasts
+          duration: 3000,
+          style: {
+            background: "#363636",
+            color: "#fff",
+          },
+          // Custom options for success toasts
+          success: {
+            duration: 3000,
+            theme: {
+              primary: "green",
+              secondary: "black",
+            },
+          },
+          // Custom options for error toasts
+          error: {
+            duration: 3000,
+            theme: {
+              primary: "red",
+              secondary: "black",
+            },
+          },
+        }}
+      />
     </>
   );
 }
