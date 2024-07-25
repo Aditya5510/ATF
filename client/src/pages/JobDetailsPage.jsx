@@ -110,7 +110,6 @@ const JobDetailsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3">
             {" "}
-            {/* Changed from lg:col-span-2 to lg:col-span-3 */}
             <JobOverview
               job={job}
               showFullDescription={showFullDescription}
@@ -120,7 +119,6 @@ const JobDetailsPage = () => {
             />
             <div className="mt-8">
               {" "}
-              {/* Added a margin-top for spacing */}
               <CandidateTable
                 candidates={job.applicants}
                 onStatusChange={handleCandidateStatusChange}
@@ -236,7 +234,7 @@ const JobOverview = ({
         rel="noopener noreferrer"
         className="inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition duration-300"
       >
-        Apply Now
+        Go to Application Link
       </a>
     </motion.div>
   );
