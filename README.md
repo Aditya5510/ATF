@@ -20,17 +20,37 @@ ATF is a platform for job recruiters to manage job postings and track applicatio
     ```
 
 2. **Backend Setup**:
-    ```bash
-    npm install
-    node index.js
-    ```
+
+    - Create a `.env` file in the root of the backend directory and add the following:
+      ```plaintext
+      PORT=<Port number>
+      MONGO_URI=<your mongo db string>
+      API_KEY=<your-api-key>
+      SECRET_KEY=<your-secret-key>
+      BASE_URL=<your deployed frontend url>
+      ```
+
+    - Install dependencies and start the backend:
+      ```bash
+      npm install
+      node index.js
+      ```
 
 3. **Frontend Setup**:
-    ```bash
-    cd client
-    npm install
-    npm run dev
-    ```
+
+    - Create a `.env.local` file in the `client` directory and add the following:
+      ```plaintext
+      VITE_CLERK_PUBLISHABLE_KEY=<your key>
+      VITE_BACKEND_URL=<your backend url>
+      VITE_OCR_KEY=<your OCRspace key>
+      ```
+
+    - Install dependencies and start the frontend:
+      ```bash
+      cd client
+      npm install
+      npm run dev
+      ```
 
 ## Usage
 
@@ -65,5 +85,3 @@ ATF is a platform for job recruiters to manage job postings and track applicatio
 4. Commit your changes (`git commit -m 'Add new feature'`).
 5. Push to the branch (`git push origin feature-branch`).
 6. Open a pull request.
-
-
