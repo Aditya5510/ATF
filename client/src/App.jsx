@@ -13,6 +13,7 @@ import CandidateForm from "./pages/CandidateForm";
 import MainLayout from "./component/MainLayout";
 import BlankLayout from "./component/BlankLayout";
 import JobDetailsPage from "./pages/JobDetailsPage";
+import Contact from "./pages/Contact";
 
 export default function App() {
   return (
@@ -38,22 +39,21 @@ export default function App() {
             </Route>
             <Route element={<BlankLayout />}>
               <Route path="/apply/:id" element={<CandidateForm />} />
+              <Route path="/application" element={<Contact />} />
             </Route>
           </Routes>
         </LoadingProvider>
       </BrowserRouter>
 
-      {/* Add the Toaster component here */}
       <Toaster
         position="top-right"
         toastOptions={{
-          // Default options for all toasts
           duration: 3000,
           style: {
             background: "#363636",
             color: "#fff",
           },
-          // Custom options for success toasts
+
           success: {
             duration: 3000,
             theme: {
@@ -61,7 +61,7 @@ export default function App() {
               secondary: "black",
             },
           },
-          // Custom options for error toasts
+
           error: {
             duration: 3000,
             theme: {
