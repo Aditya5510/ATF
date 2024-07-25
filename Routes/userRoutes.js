@@ -19,6 +19,14 @@ router.put(
   userControllers.toggleJobStatus
 );
 
+router.put(
+  "/candidate/:candidateId/status",
+  verifyToken,
+  userControllers.toggleJobSelect
+);
+
+// /user/candidate/${candidateId}/status`,
+
 // ser/job/${jobId}/toggle-status
 
 module.exports = router;

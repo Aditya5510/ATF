@@ -7,6 +7,11 @@ const mongoose = require("mongoose");
 
 const genAI = initializeGenAI(process.env.API_KEY);
 
+const isDeadlinePassed = (deadline) => {
+  const now = new Date();
+  return now > new Date(deadline);
+};
+
 const application = async (req, res) => {
   const { id: openingId } = req.params;
   const { name, email, college, degree, cgpa, resumeText, letter } = req.body;
@@ -23,6 +28,11 @@ const application = async (req, res) => {
     if (!opening.isOpen) {
       return res.status(400).json({
         message: "This job opening is no longer accepting applications",
+      });
+    }
+    if (isDeadlinePassed(opening.deadline)) {
+      return res.status(400).json({
+        message: "The deadline for this job opening has passed",
       });
     }
 

@@ -14,11 +14,7 @@ const JobDetailsPage = () => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showFullRequirements, setShowFullRequirements] = useState(false);
 
-  useEffect(() => {
-    fetchJobDetails();
-  }, [jobId]);
-
-  const fetchJobDetails = async () => {
+  const fetchJobDetails = React.useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
@@ -45,12 +41,15 @@ const JobDetailsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [jobId]);
+
+  useEffect(() => {
+    fetchJobDetails();
+  }, [fetchJobDetails]);
 
   const toggleJobStatus = async () => {
     const originalStatus = job.isOpen;
 
-    // Optimistically update the UI
     setJob((prevJob) => ({ ...prevJob, isOpen: !prevJob.isOpen }));
 
     try {
@@ -71,23 +70,24 @@ const JobDetailsPage = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // If successful, show a success toast
       toast.success(
         `Job status updated to ${!originalStatus ? "Open" : "Closed"}`
       );
     } catch (err) {
       console.error("Error updating job status:", err);
-      // Revert the status if there was an error
       setJob((prevJob) => ({ ...prevJob, isOpen: originalStatus }));
-      // Show error toast
       toast.error("Failed to update job status. Please try again.");
     }
   };
 
+  const handleCandidateStatusChange = React.useCallback(async () => {
+    await fetchJobDetails();
+  }, [fetchJobDetails]);
+
   if (loading)
     return (
       <div className="flex justify-center items-center h-screen">
-        Loading...
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600"></div>
       </div>
     );
   if (error)
@@ -107,8 +107,10 @@ const JobDetailsPage = () => {
     <div className="min-h-screen bg-gray-100 mt-16">
       <Header job={job} toggleJobStatus={toggleJobStatus} />
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3">
+            {" "}
+            {/* Changed from lg:col-span-2 to lg:col-span-3 */}
             <JobOverview
               job={job}
               showFullDescription={showFullDescription}
@@ -116,7 +118,14 @@ const JobDetailsPage = () => {
               showFullRequirements={showFullRequirements}
               setShowFullRequirements={setShowFullRequirements}
             />
-            <CandidateTable candidates={job.applicants} />
+            <div className="mt-8">
+              {" "}
+              {/* Added a margin-top for spacing */}
+              <CandidateTable
+                candidates={job.applicants}
+                onStatusChange={handleCandidateStatusChange}
+              />
+            </div>
           </div>
           <div className="lg:col-span-1">
             <AnalyticsCharts

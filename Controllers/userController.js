@@ -258,6 +258,53 @@ const toggleJobStatus = async (req, res) => {
   }
 };
 
+const toggleJobSelect = async (req, res) => {
+  try {
+    const { candidateId } = req.params;
+    const { status } = req.body;
+
+    if (status !== "Applied" && status !== "Shortlisted") {
+      return res.status(400).json({
+        message: 'Invalid status. Must be either "Applied" or "Shortlisted".',
+      });
+    }
+
+    // Find the candidate and update their status
+    const updatedCandidate = await applicantSchema.findByIdAndUpdate(
+      candidateId,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedCandidate) {
+      return res.status(404).json({ message: "Candidate not found" });
+    }
+
+    const job = await openingSchema.findOne({ applicants: candidateId });
+
+    if (!job) {
+      return res.status(404).json({ message: "Associated job not found" });
+    }
+
+    if (status === "Shortlisted") {
+      job.shortlistedApplicants = (job.shortlistedApplicants || 0) + 1;
+    } else if (status === "Applied" && job.shortlistedApplicants > 0) {
+      job.shortlistedApplicants -= 1;
+    }
+
+    await job.save();
+
+    res.json({
+      message: "Candidate status updated successfully",
+    });
+  } catch (error) {
+    console.error("Error in toggleJobSelect:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 module.exports = {
   register,
   createOpening,
@@ -265,4 +312,5 @@ module.exports = {
   getOpening,
   compOpening,
   toggleJobStatus,
+  toggleJobSelect,
 };

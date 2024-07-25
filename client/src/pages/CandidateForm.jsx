@@ -28,6 +28,7 @@ const CandidateForm = () => {
 
   React.useEffect(() => {
     const fetchJobDetails = async () => {
+      const token = localStorage.getItem("token");
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/user/jobopening/${id}`,
@@ -95,10 +96,11 @@ const CandidateForm = () => {
     if (!validateForm()) return;
     setIsSubmitting(true);
     const loadingToast = toast.loading("Submitting your application...");
-
+    const token = localStorage.getItem("token");
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/applicant/application/${id}`,
+
         {
           method: "POST",
           headers: {
@@ -138,7 +140,7 @@ const CandidateForm = () => {
       const response = await fetch("https://api.ocr.space/parse/image", {
         method: "POST",
         "Content-Type": "application/json",
-        token: `${token}`,
+
         body: formData,
       });
 

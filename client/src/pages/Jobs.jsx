@@ -12,6 +12,7 @@ const jobs = () => {
 
   const fetchJobs = async () => {
     const token = localStorage.getItem("token");
+    // console.log(token);
 
     try {
       const response = await fetch(
@@ -20,7 +21,7 @@ const jobs = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            token: `${token}`,
+            token: token,
           },
         }
       );
