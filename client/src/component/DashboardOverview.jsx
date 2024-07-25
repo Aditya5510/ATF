@@ -1,15 +1,7 @@
-// DashboardOverview.js
 import React from "react";
 import { motion } from "framer-motion";
 
-const DashboardOverview = () => {
-  const stats = [
-    { label: "Active Jobs", value: 12 },
-    { label: "Total Candidates", value: 145 },
-    { label: "Interviews Scheduled", value: 8 },
-    { label: "Avg. ATS Score", value: "72%" },
-  ];
-
+const DashboardOverview = ({ stats }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, index) => (

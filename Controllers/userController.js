@@ -269,7 +269,6 @@ const toggleJobSelect = async (req, res) => {
       });
     }
 
-    // Find the candidate and update their status
     const updatedCandidate = await applicantSchema.findByIdAndUpdate(
       candidateId,
       { status },
@@ -305,6 +304,61 @@ const toggleJobSelect = async (req, res) => {
   }
 };
 
+const getDashboardData = async (req, res) => {
+  try {
+    const { normalizedEmail } = req.body;
+
+    const user = await userSchema
+      .findOne({ email: normalizedEmail })
+      .populate("openings");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const activeJobs = user.openings.filter((opening) => opening.isOpen).length;
+    const totalCandidates = await applicantSchema.countDocuments({
+      opening: { $in: user.openings.map((o) => o._id) },
+    });
+
+    const shortlistedApplicants = await applicantSchema.countDocuments({
+      opening: { $in: user.openings.map((o) => o._id) },
+      status: "Shortlisted",
+    });
+
+    const allApplicants = await applicantSchema.find({
+      opening: { $in: user.openings.map((o) => o._id) },
+    });
+
+    let avgATSScore = 0;
+    if (allApplicants.length > 0) {
+      avgATSScore =
+        allApplicants.reduce(
+          (sum, applicant) => sum + parseFloat(applicant.ATS),
+          0
+        ) / allApplicants.length;
+    }
+
+    const interviewsScheduled = shortlistedApplicants;
+
+    const dashboardData = {
+      stats: [
+        { label: "Active Jobs", value: activeJobs },
+        { label: "Total Candidates", value: totalCandidates },
+        { label: "Interviews Scheduled", value: interviewsScheduled },
+        { label: "Avg. ATS Score", value: `${avgATSScore.toFixed(2)}%` },
+      ],
+      totalApplicants: totalCandidates,
+      shortlistedApplicants: shortlistedApplicants,
+    };
+
+    res.json(dashboardData);
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    res.status(500).json({ message: "Error fetching dashboard data" });
+  }
+};
+
 module.exports = {
   register,
   createOpening,
@@ -313,4 +367,5 @@ module.exports = {
   compOpening,
   toggleJobStatus,
   toggleJobSelect,
+  getDashboardData,
 };

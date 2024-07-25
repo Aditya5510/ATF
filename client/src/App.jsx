@@ -14,35 +14,38 @@ import MainLayout from "./component/MainLayout";
 import BlankLayout from "./component/BlankLayout";
 import JobDetailsPage from "./pages/JobDetailsPage";
 import Contact from "./pages/Contact";
+import { DashboardProvider } from "./contexts/DashboardContext";
 
 export default function App() {
   return (
     <>
       <BrowserRouter>
-        <LoadingProvider>
-          <GlobalLoader />
-          <Routes>
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route
-                path="/jobs"
-                element={
-                  <ProtectedRoute>
-                    <Jobs />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<h1>Not Found</h1>} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/sign-in" element={<SignInp />} />
-              <Route path="/job/:jobId" element={<JobDetailsPage />} />
-            </Route>
-            <Route element={<BlankLayout />}>
-              <Route path="/apply/:id" element={<CandidateForm />} />
-              <Route path="/application" element={<Contact />} />
-            </Route>
-          </Routes>
-        </LoadingProvider>
+        <DashboardProvider>
+          <LoadingProvider>
+            <GlobalLoader />
+            <Routes>
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route
+                  path="/jobs"
+                  element={
+                    <ProtectedRoute>
+                      <Jobs />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="*" element={<h1>Not Found</h1>} />
+                <Route path="/features" element={<Features />} />
+                <Route path="/sign-in" element={<SignInp />} />
+                <Route path="/job/:jobId" element={<JobDetailsPage />} />
+              </Route>
+              <Route element={<BlankLayout />}>
+                <Route path="/apply/:id" element={<CandidateForm />} />
+                <Route path="/application" element={<Contact />} />
+              </Route>
+            </Routes>
+          </LoadingProvider>
+        </DashboardProvider>
       </BrowserRouter>
 
       <Toaster

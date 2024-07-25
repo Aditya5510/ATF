@@ -25,8 +25,6 @@ router.put(
   userControllers.toggleJobSelect
 );
 
-// /user/candidate/${candidateId}/status`,
-
-// ser/job/${jobId}/toggle-status
+router.get("/dashboard", verifyToken, userControllers.getDashboardData);
 
 module.exports = router;

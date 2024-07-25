@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import NavLink from "./NavLink";
 import Spinner from "./Spinner";
 import { useLoading } from "../contexts/LoadingContext";
+import { useDashboard } from "../contexts/DashboardContext";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -57,6 +58,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isSignedIn, isLoaded } = useUser();
   const { setIsLoading } = useLoading();
+  const { fetchDashboardData } = useDashboard();
 
   React.useEffect(() => {
     const handleAuth = async () => {
@@ -73,8 +75,10 @@ export default function Navbar() {
             setIsLoading
           );
           if (success) {
-            // console.log("Details posted and token saved successfully");
+            fetchDashboardData();
           }
+        } else {
+          fetchDashboardData();
         }
       } else {
         localStorage.removeItem("token");
