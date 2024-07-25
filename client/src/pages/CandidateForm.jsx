@@ -30,7 +30,14 @@ const CandidateForm = () => {
     const fetchJobDetails = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/user/jobopening/${id}`
+          `${import.meta.env.VITE_BACKEND_URL}/user/jobopening/${id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              token: `${token}`,
+            },
+          }
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -96,6 +103,7 @@ const CandidateForm = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            token: `${token}`,
           },
           body: JSON.stringify(formData),
         }
@@ -129,6 +137,8 @@ const CandidateForm = () => {
     try {
       const response = await fetch("https://api.ocr.space/parse/image", {
         method: "POST",
+        "Content-Type": "application/json",
+        token: `${token}`,
         body: formData,
       });
 
