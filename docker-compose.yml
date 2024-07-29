@@ -1,0 +1,22 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=${MONGO_URI}
+    env_file:
+      - .env
+
+  frontend:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:5000  
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+
