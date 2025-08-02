@@ -92,7 +92,6 @@ const CandidateForm = () => {
     e.preventDefault();
     if (!validateForm()) return;
     setIsSubmitting(true);
-    const loadingToast = toast.loading("Submitting your application...");
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(

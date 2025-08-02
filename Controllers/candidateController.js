@@ -16,7 +16,7 @@ const application = async (req, res) => {
   const { id: openingId } = req.params;
   const { name, email, college, degree, cgpa, resumeText, letter } = req.body;
 
-  //   console.log(process.env.API_KEY);
+  console.log(process.env.API_KEY);
 
   try {
     openId = new mongoose.Types.ObjectId(openingId);
@@ -25,20 +25,26 @@ const application = async (req, res) => {
       return res.status(404).json({ message: "Job opening not found" });
     }
 
+    console.log("check1");
+
     if (!opening.isOpen) {
       return res.status(400).json({
         message: "This job opening is no longer accepting applications",
       });
     }
+
+    console.log("check2");
     if (isDeadlinePassed(opening.deadline)) {
       return res.status(400).json({
         message: "The deadline for this job opening has passed",
       });
     }
-
+    console.log("check3");
     if (!name || !email || !college || !degree || !resumeText) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+
+    console.log("check4");
 
     const existingApplication = await applicantSchema.findOne({
       email,
@@ -56,6 +62,7 @@ const application = async (req, res) => {
       opening.description,
       resumeText
     );
+    console.log("check5");
 
     const newApplicant = new applicantSchema({
       name,
@@ -69,9 +76,13 @@ const application = async (req, res) => {
       ATS: atsScore,
     });
 
+    console.log("check6");
+
     await newApplicant.save();
     opening.applicants.push(newApplicant._id);
     await opening.save();
+
+    console.log("check7");
 
     res.status(201).json({ message: "ok" });
   } catch (error) {
