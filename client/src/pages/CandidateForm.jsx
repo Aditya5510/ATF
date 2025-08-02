@@ -111,13 +111,11 @@ const CandidateForm = () => {
         throw new Error(errorData.message || "Application submission failed");
       }
 
-      toast.success("Application submitted successfully!", {
-        id: loadingToast,
-      });
+      toast.success("Application submitted successfully!");
       // Reset form or redirect user
     } catch (error) {
       console.error("Error submitting application:", error);
-      toast.error(error.message, { id: loadingToast });
+      toast.error(error.message);
     } finally {
       setIsSubmitting(false);
     }

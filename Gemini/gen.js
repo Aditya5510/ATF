@@ -33,7 +33,6 @@ async function performATSCalculation(genAI, jobDescription, resume) {
     const result = await model.generateContent(prompt);
     const text = (await result.response).text();
 
-    // Strip any code fences, parse JSON
     const cleaned = text.replace(/```json|```/g, "").trim();
     return JSON.parse(cleaned);
   } catch (err) {
